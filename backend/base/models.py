@@ -4,11 +4,15 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
+# class User(models.Model):
+#     user = 'user'
+
+
 class Product(models.Model):
     # one to many relation ship 使用 foreignkey
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=200, null=True, blank=True)
-    image = models.ImageField(null=True, blank=True,default='/placeholder.png')
+    image = models.ImageField(null=True, blank=True, default='/placeholder.png')
     brand = models.CharField(max_length=200, null=True, blank=True)
     category = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
