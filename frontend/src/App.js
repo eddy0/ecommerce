@@ -6,6 +6,9 @@ import {Container} from 'react-bootstrap'
 import HomePage from './pages/HomePage'
 import {BrowserRouter as Router, Route} from 'react-router-dom'
 import ProductPage from './pages/ProductPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
     return (
@@ -15,6 +18,9 @@ function App() {
                 <Container>
                     <Route path={'/'} component={HomePage} exact />
                     <Route path={'/product/:id'} component={ProductPage} />
+                    <Route path={'/login'} component={LoginPage} exact />
+                    <Route path={'/register'} component={RegisterPage} exact />
+                    <Route path={'/profile'} component={ProfilePage} exact />
 
                 </Container>
             </main>

@@ -1,16 +1,30 @@
 import React from 'react'
-import {Form, FormControl, Navbar, Nav, Button, Container} from 'react-bootstrap'
+import {Form, FormControl, Navbar, Nav, Button, Container, NavDropdown} from 'react-bootstrap'
 import {FaShoppingCart, FaUser} from 'react-icons/fa'
 import {Link} from 'react-router-dom'
+import {useDispatch, useSelector} from 'react-redux'
+import {logout} from '../actions/userActions'
 
 
 function Header(props) {
+
+    const userLogin = useSelector(state => state.userLogin)
+    const {userInfo} = userLogin
+    const dispatch = useDispatch()
+
+    const handleLogout = () => {
+        console.log('logout')
+        dispatch(logout())
+    }
+
+    console.log(userInfo)
+
     return (
         <header>
             <Navbar bg="dark" variant={'dark'} expand="lg" collapseOnSelect={true}>
                 <Container>
 
-                    <Navbar.Brand  as={Link} to="/">Shop</Navbar.Brand>
+                    <Navbar.Brand as={Link} to="/">Shop</Navbar.Brand>
                     <Navbar.Toggle aria-controls="navbarScroll"/>
                     <Navbar.Collapse id="navbarScroll">
                         <Nav
@@ -22,10 +36,27 @@ function Header(props) {
                                 <FaShoppingCart/>
                                 Cart
                             </Nav.Link>
-                            <Nav.Link as={Link} to="/login">
-                                <FaUser/>
-                                <span>Login</span>
-                            </Nav.Link>
+
+                            {
+                                userInfo  ?
+                                    (
+                                        <NavDropdown id={'username'} title={'userInfo'}>
+                                            <NavDropdown.Item as={Link} to={'/profile'}>
+                                                profile
+                                            </NavDropdown.Item>
+                                            <NavDropdown.Item onClick={handleLogout}>
+                                                logout
+                                            </NavDropdown.Item>
+                                        </NavDropdown>
+
+                                    )
+                                    : (<Nav.Link as={Link} to="/login">
+                                        <FaUser/>
+                                        <span>Login</span>
+                                    </Nav.Link>)
+                            }
+
+
                         </Nav>
                         <Form className="d-flex">
                             <FormControl
