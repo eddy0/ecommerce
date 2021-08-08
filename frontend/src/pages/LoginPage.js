@@ -15,7 +15,7 @@ function LoginPage({location, history}) {
     const [password, setPassword] = useState('')
     const redirect = location.search ? location.search.split('=')[1] : '/'
     const userLogin = useSelector(state => state.userLogin)
-    const { error, loading, userInfo } = userLogin
+    const {error, loading, userInfo} = userLogin
 
     useEffect(() => {
         if (userInfo) {
@@ -33,7 +33,7 @@ function LoginPage({location, history}) {
         <FormContainer>
             <h1>Sign In</h1>
             {error && <Message variant={'danger'}>{error}</Message>}
-            {loading && <Loader /> }
+            {loading && <Loader/>}
 
             <Form onSubmit={handleSubmit}>
                 <Form.Group controlId={'email'}>
@@ -69,7 +69,7 @@ function LoginPage({location, history}) {
             <Row className={'py-3'}>
                 <Col>
                     new Customer ?
-                    <Link to={redirect ? `/register?redirect=${redirect}`: '/register'}>
+                    <Link to={redirect ? `/register?redirect=${redirect}` : '/register'}>
 
                         register
                     </Link>
