@@ -1,11 +1,12 @@
-import React, {useEffect} from 'react'
-import CheckoutSteps from '../components/CheckoutSteps'
+import React, {useEffect, useState} from 'react'
 import {Button, Card, Col, Image, ListGroup, Row} from 'react-bootstrap'
 import Message from '../components/Message'
 import {Link} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
-import {getOrderDetails} from '../actions/orderActions'
+import {getOrderDetails, payOrder} from '../actions/orderActions'
 import Loader from '../components/Loader'
+import {PayPalButton} from 'react-paypal-button-v2'
+import {ORDER_DELIVER_RESET, ORDER_PAY_RESET} from '../constants/orderConstants'
 
 
 function OrderPage({match, history}) {
@@ -16,6 +17,13 @@ function OrderPage({match, history}) {
     const orderDetails = useSelector(state => state.orderDetails)
     const {order, error, loading} = orderDetails
 
+
+    const orderPay = useSelector(state => state.orderPay)
+    const {loading: loadingPay, success: successPay} = orderPay
+
+
+    const [sdkReady, setSdkReady] = useState(false)
+
     const userLogin = useSelector(state => state.userLogin)
     const {userInfo} = userLogin
 
@@ -23,7 +31,19 @@ function OrderPage({match, history}) {
         order.itemsPrice = order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0).toFixed(2)
     }
 
-    //Af0rFO-Dex7r7MvAl1MCy_MdP9Vo2XJoVgrc7i5bWCfXNiQ9WGls_DzpGJySCYOvWC04SYRbvmS31Nw7
+
+    const addPayPalScript = () => {
+        let id = 'Af0rFO-Dex7r7MvAl1MCy_MdP9Vo2XJoVgrc7i5bWCfXNiQ9WGls_DzpGJySCYOvWC04SYRbvmS31Nw7'
+        const script = document.createElement('script')
+        script.type = 'text/javascript'
+        script.src = 'https://www.paypal.com/sdk/js?client-id=' + id
+        script.async = true
+        script.onload = () => {
+            setSdkReady(true)
+        }
+        document.body.appendChild(script)
+    }
+
 
     useEffect(() => {
         if (!userInfo) {
@@ -31,9 +51,16 @@ function OrderPage({match, history}) {
 
         }
 
-        if (!order || Number(order._id) !== Number(orderId)) {
-
+        if (!order || Number(order._id) !== Number(orderId) ) {
+            dispatch({ type: ORDER_PAY_RESET })
+            dispatch({ type: ORDER_DELIVER_RESET })
             dispatch(getOrderDetails(orderId))
+        } else if (!order.isPaid) {
+            if (!window.paypal) {
+                addPayPalScript()
+            } else {
+                setSdkReady(true)
+            }
         }
 
     }, [dispatch, order, orderId])
@@ -44,6 +71,10 @@ function OrderPage({match, history}) {
 
     if (error) {
         return <Message variant="danger">{error}</Message>
+    }
+
+    const successPaymentHandler = (paymentResult) => {
+        dispatch(payOrder(orderId, paymentResult))
     }
 
     return (
@@ -70,9 +101,9 @@ function OrderPage({match, history}) {
                             </p>
 
                             {order.isDelivered ? (
-                                <Message variant='success'>Delivered on {order.deliveredAt}</Message>
+                                <Message variant="success">Delivered on {order.deliveredAt}</Message>
                             ) : (
-                                <Message variant='warning'>Not Delivered</Message>
+                                <Message variant="warning">Not Delivered</Message>
                             )}
 
                         </ListGroup.Item>
@@ -84,11 +115,12 @@ function OrderPage({match, history}) {
                             {order.paymentMethod}
                         </p>
                         {order.isPaid ? (
-                            <Message variant='success'>Paid on {order.paidAt}</Message>
+                            <Message variant="success">Paid on {order.paidAt}</Message>
                         ) : (
-                            <Message variant='warning'>Not Paid</Message>
+                            <Message variant="warning">Not Paid</Message>
                         )}
                     </ListGroup.Item>
+
                     <ListGroup.Item>
                         <h2>Order Items</h2>
                         {order.orderItems.length === 0
@@ -157,20 +189,20 @@ function OrderPage({match, history}) {
                                 </Row>
                             </ListGroup.Item>
 
-                            {/*{!order.isPaid && (*/}
-                            {/*    <ListGroup.Item>*/}
-                            {/*        {loadingPay && <Loader />}*/}
+                            {!order.isPaid && (
+                                <ListGroup.Item>
+                                    {loadingPay && <Loader/>}
 
-                            {/*        {!sdkReady ? (*/}
-                            {/*            <Loader />*/}
-                            {/*        ) : (*/}
-                            {/*            <PayPalButton*/}
-                            {/*                amount={order.totalPrice}*/}
-                            {/*                onSuccess={successPaymentHandler}*/}
-                            {/*            />*/}
-                            {/*        )}*/}
-                            {/*    </ListGroup.Item>*/}
-                            {/*)}*/}
+                                    {!sdkReady ? (
+                                        <Loader/>
+                                    ) : (
+                                        <PayPalButton
+                                            amount={order.totalPrice}
+                                            onSuccess={successPaymentHandler}
+                                        />
+                                    )}
+                                </ListGroup.Item>
+                            )}
 
 
                         </ListGroup>

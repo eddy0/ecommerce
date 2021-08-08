@@ -61,6 +61,15 @@ def addOrderItems(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def get_orders(request):
+    user = request.user
+    orders = user.order_set.all()
+    serializer = OrderSerializer(orders, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_order_by_id(request, pk):
     user = request.user
     try:
@@ -82,5 +91,6 @@ def update_order_to_paid(request, pk):
 
     order.isPaid = True
     order.paidAt = datetime.now()
+    print(order)
     order.save()
     return Response('order was paid')
