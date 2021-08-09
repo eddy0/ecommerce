@@ -6,17 +6,20 @@ import {useDispatch, useSelector} from 'react-redux'
 import {listProducts} from '../actions/productActions'
 import Loader from '../components/Loader'
 import Message from '../components/Message'
+import Paginate from '../components/Paginate'
 
 
-function HomePage(props) {
+function HomePage({history}) {
     const dispatch = useDispatch()
     const productList = useSelector(state => state.productList)
-    const {error, loading, products} = productList
+    const {error, loading, products, page, pages} = productList
+
+    const keyword = history.location.search
 
     useEffect(() => {
-        dispatch(listProducts())
+        dispatch(listProducts(keyword))
 
-    }, [dispatch])
+    }, [dispatch, keyword])
 
     if (loading) {
         return <Loader />
@@ -41,6 +44,7 @@ function HomePage(props) {
                 })}
 
             </Row>
+            <Paginate page={page} pages={pages} keyword={keyword} />
         </div>
     )
 }

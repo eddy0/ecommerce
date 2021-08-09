@@ -4,6 +4,7 @@ import {FaShoppingCart, FaUser} from 'react-icons/fa'
 import {Link} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {logout} from '../actions/userActions'
+import SearchBox from './SearchBox'
 
 
 function Header(props) {
@@ -27,6 +28,7 @@ function Header(props) {
                     <Navbar.Brand as={Link} to="/">Shop</Navbar.Brand>
                     <Navbar.Toggle aria-controls="navbarScroll"/>
                     <Navbar.Collapse id="navbarScroll">
+                        <SearchBox />
                         <Nav
                             className="mr-auto my-2 my-lg-0"
                             style={{maxHeight: '100px'}}
@@ -40,7 +42,7 @@ function Header(props) {
                             {
                                 userInfo  ?
                                     (
-                                        <NavDropdown id={'username'} title={'userInfo'}>
+                                        <NavDropdown id={'username'} title={userInfo.name}>
                                             <NavDropdown.Item as={Link} to={'/profile'}>
                                                 profile
                                             </NavDropdown.Item>
@@ -56,17 +58,28 @@ function Header(props) {
                                     </Nav.Link>)
                             }
 
+                            {userInfo && userInfo.isAdmin &&
+                            (
+                                <NavDropdown id={'admin'} title={'admin'}>
+                                    <NavDropdown.Item as={Link} to={'/admin/userlist'}>
+                                        users
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to={'/admin/productlist'}>
+                                        products
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to={'/admin/orderlist'}>
+                                        orders
+                                    </NavDropdown.Item>
+
+
+                                </NavDropdown>
+
+                            )
+                            }
+
 
                         </Nav>
-                        <Form className="d-flex">
-                            <FormControl
-                                type="search"
-                                placeholder="Search"
-                                className="mr-2"
-                                aria-label="Search"
-                            />
-                            <Button variant="outline-success">Search</Button>
-                        </Form>
+
                     </Navbar.Collapse>
                 </Container>
             </Navbar>

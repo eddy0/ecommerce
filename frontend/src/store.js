@@ -1,30 +1,54 @@
 import {createStore, applyMiddleware, combineReducers} from 'redux'
 import {composeWithDevTools} from 'redux-devtools-extension'
 import thunk from 'redux-thunk'
-import {productDetailsReducer, productListReducer} from './reducers/productReducers'
 import {
-    userDetailsReducer,
+    productCreateReducer,
+    productDeleteReducer,
+    productDetailsReducer,
+    productListReducer, productReviewCreateReducer, productTopRatedReducer, productUpdateReducer
+} from './reducers/productReducers'
+import {
+    userDeleteReducer,
+    userDetailsReducer, userListReducer,
     userLoginReducer,
     userRegisterReducer,
-    userUpdateProfileReducer
+    userUpdateProfileReducer, userUpdateReducer
 } from './reducers/userReducers'
 import {cartReducer} from './reducers/cartReducers'
-import {orderCreateReducer, orderDetailsReducer, orderListMyReducer, orderPayReducer} from './reducers/orderReducers'
+import {
+    orderCreateReducer, orderDeliverReducer,
+    orderDetailsReducer,
+    orderListMyReducer,
+    orderListReducer,
+    orderPayReducer
+} from './reducers/orderReducers'
 
 
 const reducer = combineReducers({
     productList: productListReducer,
     productDetails: productDetailsReducer,
+    productDelete: productDeleteReducer,
+    productCreate: productCreateReducer,
+    productUpdate: productUpdateReducer,
+    productReviewCreate: productReviewCreateReducer,
+    productTopRated: productTopRatedReducer,
+
     cart: cartReducer,
     userLogin: userLoginReducer,
     userRegister: userRegisterReducer,
     userDetails: userDetailsReducer,
     userUpdateProfile: userUpdateProfileReducer,
+    userList: userListReducer,
+    userDelete: userDeleteReducer,
+    userUpdate: userUpdateReducer,
 
     orderCreate: orderCreateReducer,
     orderDetails: orderDetailsReducer,
     orderPay: orderPayReducer,
     orderListMy: orderListMyReducer,
+    orderList: orderListReducer,
+    orderDeliver: orderDeliverReducer,
+
 })
 
 const cartItemsFromStorate = localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems')) : []

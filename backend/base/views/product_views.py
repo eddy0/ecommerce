@@ -1,16 +1,39 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+from rest_framework import status
 # Create your views here.
-from base.models import Product
+from base.models import Product, Review
 from ..serializers import ProductSerializer
 
 
 @api_view(['GET'])
 def get_products(request):
-    products = Product.objects.all()
+    # query on keyword
+    query = request.query_params.get('keyword')
+    if query is None:
+        query = ''
+    products = Product.objects.filter(name__icontains=query)
+    # query on pagination
+
+    page = request.query_params.get('page')
+    paginator = Paginator(products, 1)
+
+    try:
+        products = paginator.page(page)
+    except PageNotAnInteger:
+        products = paginator.page(1)
+    except EmptyPage:
+        products = paginator.page(paginator.num_pages)
+
+    if page is None:
+        page = 1
+    page = int(page)
+
     serializer = ProductSerializer(products, many=True)
-    return Response(serializer.data)
+    return Response({'products': serializer.data, 'page': page, 'pages': paginator.num_pages})
 
 
 @api_view(['GET'])
@@ -18,3 +41,100 @@ def get_product(request, pk):
     product = Product.objects.get(_id=pk)
     serializer = ProductSerializer(product, many=False)
     return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_product(request, pk):
+    product = Product.objects.get(_id=pk)
+    product.delete()
+    return Response('product deleted')
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def create_product(request):
+    user = request.user
+    product = Product.objects.create(
+        user=user,
+        name='sample',
+        price=0,
+        brand='sample brand',
+        countInStock=0,
+        category='category',
+        description='',
+    )
+    serializer = ProductSerializer(product, many=False)
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def update_product(request, pk):
+    data = request.data
+    product = Product.objects.get(_id=pk)
+
+    product.name = data['name']
+    product.price = data['price']
+    product.brand = data['brand']
+    product.countInStock = data['countInStock']
+    product.category = data['category']
+    product.description = data['description']
+
+    # product.image = data['image']
+
+    product.save()
+
+    serializer = ProductSerializer(product, many=False)
+
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+# @permission_classes([IsAdminUser])
+def upload_image(request):
+    data = request.data
+
+    product_id = data['product_id']
+    product = Product.objects.get(_id=product_id)
+
+    product.image = request.FILES.get('image')
+    product.save()
+
+    return Response('image uploaded')
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_view(request, pk):
+    user = request.user
+    product = Product.objects.get(_id=pk)
+    data = request.data
+
+    # review exist
+    exists = product.review_set.filter(user=user).exists()
+    if exists:
+        content = {'details: already reviews'}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+    # no rating
+    elif data['rating'] == 0:
+        content = {'details: please select rating'}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+    # create review
+    else:
+        review = Review.objects.create(
+            user=user,
+            product=product,
+            name=user.first_name,
+            rating=data['rating'],
+            comment=data['comment']
+        )
+        reviews = product.review_set.all()
+        product.numReviews = len(reviews)
+
+        total = 0
+        for i in reviews:
+            total += i.rating
+        product.rating = total / len(reviews)
+        product.save()
+        return Response('review added')
